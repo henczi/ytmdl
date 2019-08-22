@@ -1,0 +1,5 @@
+module.exports = {
+    FFMPEG_PATH: 'path/to',
+    FFPROBE_PATH: 'path/to',
+    LASTFM_API_KEY: 'KEY',
+}
