@@ -76,7 +76,12 @@ async function getCover(ctx) {
 
     const searchResult = await fetch(searchQuery).then(x => x.json());
 
-    const mbid = (searchResult.results.trackmatches.track.find(y => y.mbid) || {}).mbid;
+    const tracks = ((searchResult.results || {}).trackmatches || {}).track || [];
+    const mbid = (tracks.find(y => y.mbid) || {}).mbid;
+
+    if (!mbid) {
+        return ctx;
+    }
 
     const trackQuery = `http://ws.audioscrobbler.com/2.0/`
         +`?method=track.getInfo`
