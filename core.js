@@ -5,7 +5,7 @@ const ffmpeg = require('fluent-ffmpeg');
 const fetch = require('node-fetch');
 
 const config = require('./config');
-const COVER_FILENAME = 'cover.png';
+const COVER_FILENAME = 'tmp-cover.png';
 
 function ffmpegCommand() {
     let command = ffmpeg();
@@ -96,7 +96,7 @@ async function getCover(ctx) {
 
     if (imageUrl) {
         const imageResult = await fetch(imageUrl);
-        await imageResult.body.pipe(fs.createWriteStream(COVER_FILENAME));
+        await imageResult.body.pipe(fs.createWriteStream(ctx.videoId + COVER_FILENAME));
         ctx.hasCover = true;
     }
     return ctx;
@@ -120,7 +120,7 @@ function downloadAndConvert(ctx) {
 
         if (ctx.hasCover) {
             command = command
-                .input(COVER_FILENAME)
+                .input(ctx.videoId + COVER_FILENAME)
                 // konvertálás nélkül
                 .outputOptions('-c:v', 'copy')
                 // -map nélkül csak az audio (eq: -map 0:a)
@@ -147,14 +147,18 @@ function downloadAndConvert(ctx) {
     });
 }
 
-function finalize() {
-    if (fs.existsSync(COVER_FILENAME))
-        fs.unlinkSync(COVER_FILENAME);
+function finalize(videoId) {
+    return function() {
+        if (fs.existsSync(videoId + COVER_FILENAME))
+            fs.unlinkSync(videoId + COVER_FILENAME);
+    }
 }
 
-function finalizeAndThrowError(err) {
-    finalize();
-    throw err;
+function throwErrorAnd(fun) {
+    return function(err) {
+        fun();
+        throw err;
+    }
 }
 
 function callEvent(event) {
@@ -175,9 +179,9 @@ function download(videoId, events = {}) {
             .then(callEvent(events.downloadStart))
         .then(downloadAndConvert)
             .then(callEvent(events.downloadEnd))
-        .then(finalize)
+        .then(finalize(videoId))
             .then(callEvent(events.end))
-        .catch(finalizeAndThrowError);
+        .catch(throwErrorAnd(finalize(videoId)));
 
 }
 
