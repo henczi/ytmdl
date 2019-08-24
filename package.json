@@ -3,6 +3,7 @@
     "@types/fluent-ffmpeg": "^2.1.10",
     "fluent-ffmpeg": "^2.1.2",
     "node-fetch": "^2.6.0",
+    "ws": "^7.1.2",
     "ytdl-core": "^0.29.3"
   }
 }
