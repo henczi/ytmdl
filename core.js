@@ -20,8 +20,7 @@ async function getMetadata(ctx) {
     const info = await ytdl.getInfo(ctx.videoId);
     const media_data = info.media || {};
 
-    let media_title = info.title
-        || ((info.player_response || {}).videoDetails || {}).title
+    let media_title = info.videoDetails.title
         || ('UNKNOWN-' + video_id);
 
     let metadata = {
@@ -31,7 +30,7 @@ async function getMetadata(ctx) {
         year: '',
     }
 
-    const description = info.description
+    const description = info.videoDetails.shortDescription
         || ((info.player_response || {}).videoDetails || {}).shortDescription
         || '';
 
